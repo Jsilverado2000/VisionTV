@@ -1,0 +1,1643 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisionTV</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0b0b0f;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    height: 64px;
+    background: #15151c;
+    border-bottom: 1px solid #292933;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 10px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+input,
+select {
+    background: #20202a;
+    color: white;
+    border: 1px solid #383844;
+    border-radius: 6px;
+    padding: 10px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #4d8cff;
+}
+
+button {
+    background: #292933;
+    color: white;
+    border: 0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #3b3b48;
+}
+
+.main {
+    display: flex;
+    height: calc(100vh - 64px);
+}
+
+.sidebar {
+    width: 330px;
+    background: #111116;
+    border-right: 1px solid #292933;
+    display: flex;
+    flex-direction: column;
+}
+
+.search {
+    padding: 12px;
+}
+
+.search input {
+    width: 100%;
+}
+
+.group {
+    padding: 0 12px 12px;
+}
+
+.group select {
+    width: 100%;
+}
+
+.channels {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.channel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #202027;
+    cursor: pointer;
+}
+
+.channel:hover {
+    background: #1d1d25;
+}
+
+.channel.active {
+    background: #292934;
+}
+
+.channel-logo {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    background: #20202a;
+    border-radius: 5px;
+}
+
+.channel-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.channel-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-group {
+    color: #888;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.favorite {
+    font-size: 20px;
+    color: #666;
+}
+
+.favorite.active {
+    color: gold;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.video-container {
+    flex: 1;
+    background: black;
+    min-height: 0;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    background: black;
+    object-fit: contain;
+}
+
+.video-controls {
+    height: 54px;
+    background: #15151c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+}
+
+.volume {
+    width: 120px;
+}
+
+.now-playing {
+    flex: 1;
+    color: #bbb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.guide {
+    height: 180px;
+    background: #111116;
+    border-top: 1px solid #292933;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.guide-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.program {
+    display: inline-block;
+    width: 240px;
+    min-height: 80px;
+    padding: 10px;
+    margin-right: 10px;
+    background: #1c1c24;
+    border-radius: 6px;
+}
+
+.program.current {
+    border: 1px solid #4d8cff;
+}
+
+.program-time {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.program-name {
+    font-weight: bold;
+}
+
+.empty {
+    padding: 20px;
+    text-align: center;
+    color: #777;
+}
+
+/* SETTINGS */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.settings {
+    width: 600px;
+    max-width: 90%;
+    background: #181820;
+    border: 1px solid #383844;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.settings h2 {
+    margin-top: 0;
+}
+
+.setting {
+    margin-bottom: 18px;
+}
+
+.setting label {
+    display: block;
+    margin-bottom: 7px;
+    color: #ccc;
+}
+
+.setting input {
+    width: 100%;
+}
+
+.settings-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+.save {
+    background: #3b82f6;
+}
+
+.save:hover {
+    background: #2563eb;
+}
+
+.status {
+    color: #888;
+    font-size: 13px;
+    margin-top: 7px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">📺 VisionTV</div>
+
+    <button onclick="openSettings()">
+        ⚙️ Settings
+    </button>
+
+</header>
+
+
+<div class="main">
+
+    <aside class="sidebar">
+
+        <div class="search">
+            <input
+                id="search"
+                type="text"
+                placeholder="Search channels..."
+                oninput="renderChannels()"
+            >
+        </div>
+
+        <div class="group">
+
+            <select
+                id="groupSelect"
+                onchange="renderChannels()"
+            >
+                <option value="all">All Channels</option>
+                <option value="favorites">Favorites</option>
+                <option value="recent">Recently Watched</option>
+            </select>
+
+        </div>
+
+        <div
+            id="channels"
+            class="channels"
+        >
+            <div class="empty">
+                Load a playlist to get started.
+            </div>
+        </div>
+
+    </aside>
+
+
+    <section class="content">
+
+        <div class="video-container">
+
+            <video
+                id="video"
+                controls
+            ></video>
+
+        </div>
+
+
+        <div class="video-controls">
+
+            <button onclick="togglePlay()">
+                ▶ / ❚❚
+            </button>
+
+            <button onclick="stopVideo()">
+                ■
+            </button>
+
+            <button onclick="toggleMute()">
+                🔊
+            </button>
+
+            <input
+                id="volume"
+                class="volume"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value="1"
+                oninput="changeVolume(this.value)"
+            >
+
+            <div
+                id="nowPlaying"
+                class="now-playing"
+            >
+                Nothing playing
+            </div>
+
+            <button onclick="toggleFullscreen()">
+                ⛶
+            </button>
+
+        </div>
+
+
+        <div class="guide">
+
+            <div class="guide-title">
+                TV Guide
+            </div>
+
+            <div id="guidePrograms">
+
+                <div class="empty">
+                    Select a channel to view program information.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div
+    id="settingsModal"
+    class="modal"
+>
+
+    <div class="settings">
+
+        <h2>⚙️ VisionTV Settings</h2>
+
+
+        <div class="setting">
+
+            <label>
+                M3U Playlist URL
+            </label>
+
+            <input
+                id="settingsPlaylist"
+                type="text"
+                placeholder="M3U playlist URL"
+            >
+
+        </div>
+
+
+        <div class="setting">
+
+            <label>
+                EPG / XMLTV URL
+            </label>
+
+            <input
+                id="epgUrl"
+                type="text"
+                placeholder="XMLTV EPG URL"
+            >
+
+            <div class="status">
+                Optional — supplied by your IPTV provider.
+            </div>
+
+        </div>
+
+
+        <div
+            id="settingsStatus"
+            class="status"
+        ></div>
+
+
+        <div class="settings-buttons">
+
+            <button onclick="closeSettings()">
+                Cancel
+            </button>
+
+            <button
+                class="save"
+                onclick="saveSettings()"
+            >
+                Save Settings
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="./node_modules/hls.js/dist/hls.min.js"></script>
+
+<script>
+
+let channels = [];
+
+let favorites =
+    JSON.parse(
+        localStorage.getItem("visiontv_favorites") || "[]"
+    );
+
+let recent =
+    JSON.parse(
+        localStorage.getItem("visiontv_recent") || "[]"
+    );
+
+let epgPrograms = [];
+
+let currentChannel = null;
+
+let hls = null;
+
+
+/* SETTINGS */
+
+function openSettings() {
+
+    document.getElementById("settingsPlaylist").value =
+        localStorage.getItem("visiontv_playlist") || "";
+
+    document.getElementById("epgUrl").value =
+        localStorage.getItem("visiontv_epg") || "";
+
+    document.getElementById("settingsStatus")
+        .textContent = "";
+
+    document.getElementById("settingsModal")
+        .classList.add("show");
+}
+
+
+function closeSettings() {
+
+    document.getElementById("settingsModal")
+        .classList.remove("show");
+}
+
+
+async function saveSettings() {
+
+    const playlist =
+        document.getElementById("settingsPlaylist")
+            .value
+            .trim();
+
+    const epg =
+        document.getElementById("epgUrl")
+            .value
+            .trim();
+
+    localStorage.setItem(
+        "visiontv_playlist",
+        playlist
+    );
+
+    localStorage.setItem(
+        "visiontv_epg",
+        epg
+    );
+
+    document.getElementById("settingsStatus")
+        .textContent =
+        "Settings saved.";
+
+    if (playlist) {
+        await loadPlaylist(playlist);
+    }
+
+    if (epg) {
+        await loadEPG(epg);
+    }
+
+    setTimeout(
+        closeSettings,
+        700
+    );
+}
+
+
+/* PLAYLIST / DIRECT STREAM */
+
+async function loadPlaylist(url = null) {
+
+    if (!url) {
+
+        url =
+            document.getElementById("settingsPlaylist")
+                .value
+                .trim();
+    }
+
+    if (!url) {
+
+        alert(
+            "Enter an M3U playlist or direct .m3u8 stream in Settings."
+        );
+
+        return;
+    }
+
+
+    /*
+        DIRECT M3U8 STREAM
+    */
+
+    if (
+        url.toLowerCase().includes(".m3u8")
+    ) {
+
+        localStorage.setItem(
+            "visiontv_playlist",
+            url
+        );
+
+        playDirectStream(url);
+
+        return;
+    }
+
+
+    /*
+        NORMAL M3U PLAYLIST
+    */
+
+    localStorage.setItem(
+        "visiontv_playlist",
+        url
+    );
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " + response.status
+            );
+        }
+
+        const text =
+            await response.text();
+
+        parseM3U(text);
+
+        renderGroups();
+
+        renderChannels();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not load playlist.\n\n" +
+            error.message
+        );
+    }
+}
+
+
+/* DIRECT STREAM PLAYER */
+
+function playDirectStream(url) {
+
+    const video =
+        document.getElementById("video");
+
+    if (hls) {
+
+        hls.destroy();
+
+        hls = null;
+    }
+
+
+    document.getElementById("nowPlaying")
+        .textContent =
+        "Direct Stream";
+
+
+    if (
+        window.Hls &&
+        Hls.isSupported()
+    ) {
+
+        hls = new Hls();
+
+        hls.loadSource(url);
+
+        hls.attachMedia(video);
+
+        hls.on(
+            Hls.Events.MANIFEST_PARSED,
+            function() {
+
+                video.play()
+                    .catch(() => {});
+
+            }
+        );
+
+        hls.on(
+            Hls.Events.ERROR,
+            function(event, data) {
+
+                console.error(
+                    "HLS error:",
+                    data
+                );
+
+            }
+        );
+
+    } else {
+
+        video.src = url;
+
+        video.play()
+            .catch(() => {});
+    }
+}
+
+
+/* M3U PARSER */
+
+function parseM3U(text) {
+
+    channels = [];
+
+    const lines =
+        text.split(/\r?\n/);
+
+    let current = null;
+
+
+    for (
+        let i = 0;
+        i < lines.length;
+        i++
+    ) {
+
+        const line =
+            lines[i].trim();
+
+
+        if (
+            line.startsWith("#EXTINF")
+        ) {
+
+            const nameMatch =
+                line.match(/,(.*)$/);
+
+            const logoMatch =
+                line.match(
+                    /tvg-logo="([^"]*)"/i
+                );
+
+            const groupMatch =
+                line.match(
+                    /group-title="([^"]*)"/i
+                );
+
+            const idMatch =
+                line.match(
+                    /tvg-id="([^"]*)"/i
+                );
+
+
+            current = {
+
+                id:
+                    crypto.randomUUID(),
+
+                name:
+                    nameMatch
+                        ? nameMatch[1].trim()
+                        : "Unknown Channel",
+
+                logo:
+                    logoMatch
+                        ? logoMatch[1]
+                        : "",
+
+                group:
+                    groupMatch
+                        ? groupMatch[1]
+                        : "Other",
+
+                tvgId:
+                    idMatch
+                        ? idMatch[1]
+                        : "",
+
+                url: ""
+            };
+
+        }
+
+        else if (
+            current &&
+            line &&
+            !line.startsWith("#")
+        ) {
+
+            current.url =
+                line;
+
+            channels.push(
+                current
+            );
+
+            current = null;
+        }
+    }
+
+
+    document.getElementById("nowPlaying")
+        .textContent =
+        channels.length +
+        " channels loaded";
+}
+
+
+/* GROUPS */
+
+function renderGroups() {
+
+    const select =
+        document.getElementById("groupSelect");
+
+    while (
+        select.options.length > 3
+    ) {
+
+        select.remove(3);
+    }
+
+
+    const groups =
+        [
+            ...new Set(
+                channels
+                    .map(c => c.group)
+                    .filter(Boolean)
+            )
+        ].sort();
+
+
+    groups.forEach(
+        group => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                "group:" + group;
+
+            option.textContent =
+                group;
+
+            select.appendChild(
+                option
+            );
+        }
+    );
+}
+
+
+/* CHANNELS */
+
+function renderChannels() {
+
+    const container =
+        document.getElementById(
+            "channels"
+        );
+
+    const search =
+        document.getElementById(
+            "search"
+        )
+        .value
+        .toLowerCase();
+
+    const filter =
+        document.getElementById(
+            "groupSelect"
+        ).value;
+
+
+    let list =
+        channels.filter(
+            channel => {
+
+                if (
+                    search &&
+                    !channel.name
+                        .toLowerCase()
+                        .includes(search)
+                ) {
+
+                    return false;
+                }
+
+
+                if (
+                    filter ===
+                    "favorites"
+                ) {
+
+                    return favorites
+                        .includes(
+                            channel.id
+                        );
+                }
+
+
+                if (
+                    filter ===
+                    "recent"
+                ) {
+
+                    return recent
+                        .includes(
+                            channel.id
+                        );
+                }
+
+
+                if (
+                    filter.startsWith(
+                        "group:"
+                    )
+                ) {
+
+                    return channel.group ===
+                        filter.substring(6);
+                }
+
+
+                return true;
+            }
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (!list.length) {
+
+        container.innerHTML =
+            '<div class="empty">No channels found.</div>';
+
+        return;
+    }
+
+
+    list.forEach(
+        channel => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.className =
+                "channel";
+
+
+            if (
+                currentChannel &&
+                currentChannel.id ===
+                    channel.id
+            ) {
+
+                div.classList.add(
+                    "active"
+                );
+            }
+
+
+            div.onclick =
+                () => playChannel(
+                    channel
+                );
+
+
+            const logo =
+                document.createElement(
+                    "img"
+                );
+
+            logo.className =
+                "channel-logo";
+
+            logo.src =
+                channel.logo || "";
+
+
+            const info =
+                document.createElement(
+                    "div"
+                );
+
+            info.className =
+                "channel-info";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+            name.className =
+                "channel-name";
+
+            name.textContent =
+                channel.name;
+
+
+            const group =
+                document.createElement(
+                    "div"
+                );
+
+            group.className =
+                "channel-group";
+
+            group.textContent =
+                channel.group;
+
+
+            info.appendChild(name);
+
+            info.appendChild(group);
+
+
+            const star =
+                document.createElement(
+                    "div"
+                );
+
+            star.className =
+                "favorite";
+
+
+            if (
+                favorites.includes(
+                    channel.id
+                )
+            ) {
+
+                star.classList.add(
+                    "active"
+                );
+            }
+
+
+            star.textContent =
+                "★";
+
+
+            star.onclick =
+                event => {
+
+                    event.stopPropagation();
+
+                    toggleFavorite(
+                        channel
+                    );
+                };
+
+
+            div.appendChild(logo);
+
+            div.appendChild(info);
+
+            div.appendChild(star);
+
+            container.appendChild(div);
+        }
+    );
+}
+
+
+/* FAVORITES */
+
+function toggleFavorite(channel) {
+
+    if (
+        favorites.includes(
+            channel.id
+        )
+    ) {
+
+        favorites =
+            favorites.filter(
+                id =>
+                    id !==
+                    channel.id
+            );
+
+    } else {
+
+        favorites.push(
+            channel.id
+        );
+    }
+
+
+    localStorage.setItem(
+        "visiontv_favorites",
+        JSON.stringify(
+            favorites
+        )
+    );
+
+
+    renderChannels();
+}
+
+
+/* PLAY CHANNEL */
+
+function playChannel(channel) {
+
+    currentChannel =
+        channel;
+
+
+    recent =
+        recent.filter(
+            id =>
+                id !==
+                channel.id
+        );
+
+
+    recent.unshift(
+        channel.id
+    );
+
+
+    recent =
+        recent.slice(
+            0,
+            50
+        );
+
+
+    localStorage.setItem(
+        "visiontv_recent",
+        JSON.stringify(
+            recent
+        )
+    );
+
+
+    document.getElementById(
+        "nowPlaying"
+    ).textContent =
+        channel.name;
+
+
+    playDirectStream(
+        channel.url
+    );
+
+
+    renderChannels();
+
+    showGuide(channel);
+}
+
+
+/* VIDEO CONTROLS */
+
+function togglePlay() {
+
+    const video =
+        document.getElementById(
+            "video"
+        );
+
+    if (video.paused) {
+
+        video.play()
+            .catch(() => {});
+
+    } else {
+
+        video.pause();
+    }
+}
+
+
+function stopVideo() {
+
+    const video =
+        document.getElementById(
+            "video"
+        );
+
+    video.pause();
+
+    video.removeAttribute(
+        "src"
+    );
+
+    video.load();
+
+    if (hls) {
+
+        hls.destroy();
+
+        hls = null;
+    }
+
+    document.getElementById(
+        "nowPlaying"
+    ).textContent =
+        "Nothing playing";
+}
+
+
+function toggleMute() {
+
+    const video =
+        document.getElementById(
+            "video"
+        );
+
+    video.muted =
+        !video.muted;
+}
+
+
+function changeVolume(value) {
+
+    document.getElementById(
+        "video"
+    ).volume =
+        Number(value);
+}
+
+
+function toggleFullscreen() {
+
+    const video =
+        document.getElementById(
+            "video"
+        );
+
+    if (
+        video.requestFullscreen
+    ) {
+
+        video.requestFullscreen();
+    }
+}
+
+
+/* EPG */
+
+async function loadEPG(url = null) {
+
+    if (!url) {
+
+        url =
+            localStorage.getItem(
+                "visiontv_epg"
+            );
+    }
+
+    if (!url) return;
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+        }
+
+        const xml =
+            await response.text();
+
+        parseEPG(xml);
+
+        if (currentChannel) {
+
+            showGuide(
+                currentChannel
+            );
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "EPG error:",
+            error
+        );
+    }
+}
+
+
+function parseEPG(xmlText) {
+
+    const parser =
+        new DOMParser();
+
+    const xml =
+        parser.parseFromString(
+            xmlText,
+            "text/xml"
+        );
+
+    epgPrograms = [];
+
+
+    xml.querySelectorAll(
+        "programme"
+    ).forEach(
+        program => {
+
+            const start =
+                parseXMLTVDate(
+                    program.getAttribute(
+                        "start"
+                    )
+                );
+
+            const stop =
+                parseXMLTVDate(
+                    program.getAttribute(
+                        "stop"
+                    )
+                );
+
+            const title =
+                program.querySelector(
+                    "title"
+                );
+
+
+            if (
+                start &&
+                stop &&
+                title
+            ) {
+
+                epgPrograms.push({
+
+                    channel:
+                        program.getAttribute(
+                            "channel"
+                        ) || "",
+
+                    start:
+                        start,
+
+                    stop:
+                        stop,
+
+                    title:
+                        title.textContent.trim()
+                });
+            }
+        }
+    );
+}
+
+
+function parseXMLTVDate(value) {
+
+    if (!value) return null;
+
+
+    const match =
+        value.match(
+            /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/
+        );
+
+
+    if (!match) return null;
+
+
+    return new Date(
+        Date.UTC(
+            Number(match[1]),
+            Number(match[2]) - 1,
+            Number(match[3]),
+            Number(match[4]),
+            Number(match[5]),
+            Number(match[6])
+        )
+    );
+}
+
+
+function showGuide(channel) {
+
+    const container =
+        document.getElementById(
+            "guidePrograms"
+        );
+
+
+    if (!epgPrograms.length) {
+
+        container.innerHTML =
+            '<div class="empty">' +
+            'No EPG loaded. Add an XMLTV URL in Settings.' +
+            '</div>';
+
+        return;
+    }
+
+
+    const now =
+        new Date();
+
+
+    const matches =
+        epgPrograms
+            .filter(
+                program =>
+                    (
+                        program.channel ===
+                        channel.tvgId ||
+                        program.channel ===
+                        channel.name
+                    ) &&
+                    program.stop > now
+            )
+            .sort(
+                (a,b) =>
+                    a.start -
+                    b.start
+            )
+            .slice(
+                0,
+                8
+            );
+
+
+    container.innerHTML = "";
+
+
+    if (!matches.length) {
+
+        container.innerHTML =
+            '<div class="empty">' +
+            'No matching EPG information.' +
+            '</div>';
+
+        return;
+    }
+
+
+    matches.forEach(
+        program => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            const current =
+                program.start <= now &&
+                program.stop > now;
+
+
+            div.className =
+                "program";
+
+
+            if (current) {
+
+                div.classList.add(
+                    "current"
+                );
+            }
+
+
+            div.innerHTML =
+                '<div class="program-time">' +
+                formatTime(
+                    program.start
+                ) +
+                ' - ' +
+                formatTime(
+                    program.stop
+                ) +
+                '</div>' +
+
+                '<div class="program-name">' +
+                escapeHtml(
+                    program.title
+                ) +
+                '</div>';
+
+
+            container.appendChild(
+                div
+            );
+        }
+    );
+}
+
+
+function formatTime(date) {
+
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour: "numeric",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+function escapeHtml(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+}
+
+
+/* KEYBOARD */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.target.tagName ===
+                "INPUT" ||
+            event.target.tagName ===
+                "SELECT"
+        ) {
+            return;
+        }
+
+
+        if (
+            event.code ===
+            "Space"
+        ) {
+
+            event.preventDefault();
+
+            togglePlay();
+        }
+
+
+        if (
+            event.key.toLowerCase() ===
+            "m"
+        ) {
+
+            toggleMute();
+        }
+
+
+        if (
+            event.key.toLowerCase() ===
+            "f"
+        ) {
+
+            toggleFullscreen();
+        }
+    }
+);
+
+
+/* STARTUP */
+
+window.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        const playlist =
+            localStorage.getItem(
+                "visiontv_playlist"
+            );
+
+        const epg =
+            localStorage.getItem(
+                "visiontv_epg"
+            );
+
+
+        if (playlist) {
+
+            document.getElementById(
+                "settingsPlaylist"
+            ).value =
+                playlist;
+
+            await loadPlaylist(
+                playlist
+            );
+        }
+
+
+        if (epg) {
+
+            await loadEPG(
+                epg
+            );
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>
+```
